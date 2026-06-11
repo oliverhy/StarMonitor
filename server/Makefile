@@ -2,7 +2,7 @@ OUT = sergate
 
 #CC = clang
 CC = gcc
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O2 -fno-strict-aliasing
 
 #CXX = clang++
 CXX = g++
