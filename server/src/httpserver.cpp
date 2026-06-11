@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <system.h>
 #include <json.h>
@@ -526,22 +527,29 @@ void CHttpServer::Handle(CConn *pConn)
 				if(s)
 				{
 					char aResp[512];
-					str_format(aResp, sizeof(aResp),
-						"{\"token\":\"%s\",\"username\":\"%s\"}", s->m_aToken, s->m_aUsername);
+					str_copy(aResp, "{\"token\":\"", sizeof(aResp));
+					str_append(aResp, s->m_aToken, sizeof(aResp));
+					str_append(aResp, "\",\"username\":\"", sizeof(aResp));
+					str_append(aResp, s->m_aUsername, sizeof(aResp));
+					str_append(aResp, "\"}", sizeof(aResp));
 					int n = str_length(aResp);
 					char aHdr[256];
-					str_format(aHdr, sizeof(aHdr),
-						"Set-Cookie: token=%s; path=/; max-age=3600\r\n", s->m_aToken);
+					str_copy(aHdr, "Set-Cookie: token=", sizeof(aHdr));
+					str_append(aHdr, s->m_aToken, sizeof(aHdr));
+					str_append(aHdr, "; path=/; max-age=3600\r\n", sizeof(aHdr));
+					fprintf(stderr, "[httpserver] login OK user=%s resp=%d hdr=%d\n", aUsername, n, str_length(aHdr));
 					Resp(pConn, 200, "OK", "application/json", aResp, n, aHdr);
 				}
 				else
 				{
+					fprintf(stderr, "[httpserver] login OK but too many sessions\n");
 					const char *msg = "{\"error\":\"too many sessions\"}";
 					Resp(pConn, 503, "Service Unavailable", "application/json", msg, str_length(msg), 0);
 				}
 			}
 			else
 			{
+				fprintf(stderr, "[httpserver] login FAILED user='%s' nusers=%d\n", aUsername, m_NumWebUsers);
 				const char *msg = "{\"error\":\"invalid credentials\"}";
 				Resp(pConn, 401, "Unauthorized", "application/json", msg, str_length(msg), 0);
 			}
