@@ -1,0 +1,10 @@
+[Unit]
+Description=StarMonitor-Server
+After=network.target
+[Service]
+EnvironmentFile=/usr/local/StarMonitor/server/config.conf
+ExecStart=/usr/local/StarMonitor/server/sergate --config=/usr/local/StarMonitor/server/config.json --web-dir=/usr/local/StarMonitor/web --port $PORT --http-port $HTTP_PORT
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target

@@ -18,7 +18,7 @@
 ### 一键安装
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/oliverhy/StarMonitor/master/status.sh) s
+bash starmonitor.sh s
 ```
 
 安装过程中会提示：
@@ -30,23 +30,20 @@ bash <(curl -s https://raw.githubusercontent.com/oliverhy/StarMonitor/master/sta
 客户端：
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/oliverhy/StarMonitor/master/status.sh) c
+bash starmonitor.sh c
 ```
 
 ### 手动安装服务端
 
 ```bash
-mkdir -p /usr/local/ServerStatus/server
-apt install wget unzip curl vim build-essential
-cd /tmp
-wget https://github.com/oliverhy/StarMonitor/archive/master.zip
-unzip master.zip
-cd ./StarMonitor-master/server
+cd ./StarMonitor/server
 make
 chmod +x sergate
-mv sergate /usr/local/ServerStatus/server
-vim /usr/local/ServerStatus/server/config.json  # 配置节点和 web_users
-nohup ./sergate --config=config.json --web-dir=/usr/local/ServerStatus/web --port=35601 --http-port=8080 > /tmp/serverstatus_server.log 2>&1 &
+mkdir -p /usr/local/StarMonitor/server
+mv sergate /usr/local/StarMonitor/server
+vim /usr/local/StarMonitor/server/config.json  # 配置节点和 web_users
+mkdir -p /usr/local/StarMonitor/web
+nohup /usr/local/StarMonitor/server/sergate --config=/usr/local/StarMonitor/server/config.json --web-dir=/usr/local/StarMonitor/web --port=35601 --http-port=8080 > /tmp/starmonitor_server.log 2>&1 &
 ```
 
 浏览器访问 `http://IP:8080` 即可看到登录页。

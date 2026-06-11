@@ -1,24 +1,22 @@
 #!/bin/bash
-# chkconfig: 2345 90 10
-# description: ServerStatus-Client
 
 ### BEGIN INIT INFO
-# Provides:          ServerStatus-Client
-# Required-Start:    $network $syslog
-# Required-Stop:     $network
+# Provides:          StarMonitor-Client
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $network $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Server status monitoring
-# Description:       Start or stop the ServerStatus Client server
+# Short-Description: Star status monitoring
+# Description:       Start or stop the StarMonitor Client
 ### END INIT INFO
 
-NAME="ServerStatus Client"
+NAME="StarMonitor Client"
 NAME_BIN="status-client.py"
 Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Font_suffix="\033[0m"
-if [[ -e "/usr/local/ServerStatus/client/status-client.py" ]]; then
-	BIN="/usr/local/ServerStatus/client/status-client.py"
-elif [[ -e "/usr/local/ServerStatus/status-client.py" ]]; then
-	BIN="/usr/local/ServerStatus/status-client.py"
+if [[ -e "/usr/local/StarMonitor/client/status-client.py" ]]; then
+	BIN="/usr/local/StarMonitor/client/status-client.py"
+elif [[ -e "/usr/local/StarMonitor/status-client.py" ]]; then
+	BIN="/usr/local/StarMonitor/status-client.py"
 else
 	echo -e "${Error_font_prefix}[错误]${Font_suffix} 客户端文件($NAME_BIN)找不到 !" && exit 1
 fi
@@ -34,10 +32,10 @@ check_running(){
 }
 do_start(){
 	if check_running; then
-		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME (PID ${PID}) 正在运行..." && exit 0
+	echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME (PID ${PID}) 正在运行..." && exit 0
 	else
 		ulimit -n 51200 >/dev/null 2>&1
-		nohup python -u "$BIN" > /tmp/serverstatus_client.log 2>&1 &
+		nohup python -u "$BIN" > /tmp/starmonitor_client.log 2>&1 &
 		sleep 2s
 		if check_running; then
 			echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 启动成功 !"
@@ -53,10 +51,10 @@ do_stop(){
 		if [[ $RETVAL -eq 0 ]]; then
 			echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 停止成功 !"
 		else
-			echo -e "${Error_font_prefix}[错误]${Font_suffix} $NAME 停止失败 !"
+			echo -e "${Error_font_prefix}[错误]${Font_suffix}$NAME 停止失败 !"
 		fi
 	else
-		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 未运行"
+		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 未运行 !"
 		RETVAL=1
 	fi
 }
@@ -77,7 +75,7 @@ case "$1" in
 	do_"$1"
 	;;
 	*)
-	echo -e "使用方法: $0 { start | stop | restart | status }"
+	echo "使用方法: $0 { start | stop | restart | status }"
 	RETVAL=1
 	;;
 esac

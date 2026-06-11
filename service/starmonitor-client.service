@@ -1,0 +1,9 @@
+[Unit]
+Description=StarMonitor-Client
+After=network.target
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/StarMonitor/client/status-client.py
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
