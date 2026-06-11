@@ -8,7 +8,6 @@
 
 - 服务端客户端脚本支持系统：Centos 7、Debian 8、Ubuntu 15.10 及以上、ArchLinux
 - Python 客户端：支持 Python 2.7+
-- Go 客户端：https://github.com/cokemine/ServerStatus-goclient
 - 流量计算：支持 vnStat 按月统计或重启清零
 - **内嵌 Web 仪表盘**：无需额外前端，sergate 自带 HTTP 服务器
 - **用户登录认证**：配置 `web_users` 账号密码，Token 鉴权
