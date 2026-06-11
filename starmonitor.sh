@@ -104,6 +104,7 @@ install_server() {
 
   # 安装服务脚本
   install_service "server"
+  mkdir -p "${WEB_DIR}/json"
   write_config
   echo -e "${Info} StarMonitor 服务端安装完成"
 }

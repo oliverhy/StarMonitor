@@ -263,7 +263,8 @@ void CMain::JSONUpdateThread(void *pUser)
 		if(!File)
 		{
 			dbg_msg("main", "Couldn't open %s", aJSONFileTmp);
-			exit(1);
+			thread_sleep(1000);
+			continue;
 		}
 		io_write(File, aFileBuf, (pBuf - aFileBuf));
 		io_flush(File);
