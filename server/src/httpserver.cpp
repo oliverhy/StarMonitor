@@ -238,8 +238,8 @@ void CHttpServer::URLDecode(char *pDst, const char *pSrc, int DstSize)
 
 void CHttpServer::Resp(CConn *pConn, int Code, const char *pStatus, const char *pCT, const char *pBody, int BodyLen, const char *pExtraHdr)
 {
-	char aBuf[16384];
-	str_format(aBuf, sizeof(aBuf),
+	char aHdr[2048];
+	str_format(aHdr, sizeof(aHdr),
 		"HTTP/1.1 %d %s\r\n"
 		"Content-Length: %d\r\n"
 		"Content-Type: %s\r\n"
@@ -247,15 +247,32 @@ void CHttpServer::Resp(CConn *pConn, int Code, const char *pStatus, const char *
 		"%s"
 		"\r\n",
 		Code, pStatus, BodyLen, pCT, pExtraHdr ? pExtraHdr : "");
-	int n = str_length(aBuf);
-	mem_copy(aBuf + n, pBody, BodyLen);
-	n += BodyLen;
-	// Direct send with retry on partial writes
+	int HdrLen = str_length(aHdr);
+
+	// Send headers
 	int sent = 0;
 	int attempts = 0;
-	while(sent < n && attempts < 100)
+	while(sent < HdrLen && attempts < 100)
 	{
-		int ret = net_tcp_send(pConn->m_Socket, aBuf + sent, n - sent);
+		int ret = net_tcp_send(pConn->m_Socket, aHdr + sent, HdrLen - sent);
+		if(ret > 0)
+		{
+			sent += ret;
+			attempts = 0;
+		}
+		else
+		{
+			attempts++;
+			thread_sleep(1);
+		}
+	}
+
+	// Send body (can be large, send directly from source buffer)
+	sent = 0;
+	attempts = 0;
+	while(sent < BodyLen && attempts < 100)
+	{
+		int ret = net_tcp_send(pConn->m_Socket, pBody + sent, BodyLen - sent);
 		if(ret > 0)
 		{
 			sent += ret;

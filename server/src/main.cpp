@@ -451,6 +451,8 @@ int main(int argc, const char *argv[])
 	int RetVal;
 	dbg_logger_stdout();
 
+	srand((unsigned int)time(0));
+
 	#if defined(CONF_FAMILY_UNIX)
 		signal(SIGINT, ExitFunc);
 		signal(SIGTERM, ExitFunc);

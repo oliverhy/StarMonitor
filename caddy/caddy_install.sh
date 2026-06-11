@@ -11,6 +11,10 @@ export PATH
 file="/usr/local/caddy/"
 caddy_file="/usr/local/caddy/caddy"
 caddy_conf_file="/usr/local/caddy/Caddyfile"
+filepath=$(
+  cd "$(dirname "$0")" || exit
+  pwd
+)
 Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Font_suffix="\033[0m" && Red_font_prefix="\033[31m" && Font_color_suffix="\033[0m" && Green_background_prefix="\033[42;37m"
 Error="${Red_font_prefix}[错误]${Font_color_suffix}"
 check_root() {
@@ -43,31 +47,36 @@ Download_caddy() {
   PID=$(ps -ef | grep "caddy" | grep -v "grep" | grep -v "init.d" | grep -v "service" | grep -v "caddy_install" | awk '{print $2}')
   [[ -n ${PID} ]] && kill -9 "${PID}"
   [[ -e "caddy*" ]] && rm -rf "caddy*"
-  if [[ ${bit} == "x86_64" ]]; then
-    wget --no-check-certificate -O "caddy" "https://github.com/CokeMine/Caddy_Linux/releases/latest/download/caddy_v2_linux_amd64"
-  elif [[ ${bit} == "i386" || ${bit} == "i686" ]]; then
-    wget --no-check-certificate -O "caddy" "https://github.com/CokeMine/Caddy_Linux/releases/latest/download/caddy_v2_linux_386"
-  elif [[ ${bit} == "armv7l" ]]; then
-    wget --no-check-certificate -O "caddy" "https://github.com/CokeMine/Caddy_Linux/releases/latest/download/caddy_v2_linux_armv7"
-  elif [[ ${bit} == "arm64" || ${bit} == "aarch64" ]]; then
-    wget --no-check-certificate -O "caddy" "https://github.com/CokeMine/Caddy_Linux/releases/latest/download/caddy_v2_linux_arm64"
+  # 从本地项目目录复制 caddy 二进制文件
+  if [[ -e "${filepath}/caddy/caddy_linux_amd64" ]]; then
+    cp "${filepath}/caddy/caddy_linux_amd64" "caddy"
+  elif [[ -e "${filepath}/caddy/caddy_linux_386" ]]; then
+    cp "${filepath}/caddy/caddy_linux_386" "caddy"
+  elif [[ -e "${filepath}/caddy/caddy_linux_armv7" ]]; then
+    cp "${filepath}/caddy/caddy_linux_armv7" "caddy"
+  elif [[ -e "${filepath}/caddy/caddy_linux_arm64" ]]; then
+    cp "${filepath}/caddy/caddy_linux_arm64" "caddy"
   else
-    echo -e "${Error_font_prefix}[错误]${Font_suffix} 不支持 [${bit}] ! 请向本站反馈[]中的名称，我会看看是否可以添加支持。" && exit 1
+    echo -e "${Error_font_prefix}[错误]${Font_suffix} 未找到本地 caddy 二进制文件，请放入 ${filepath}/caddy/ 目录" && exit 1
   fi
-  [[ ! -e "caddy" ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 下载失败 !" && exit 1
+  [[ ! -e "caddy" ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 复制失败 !" && exit 1
   chmod +x caddy
 }
 Service_caddy() {
   if [[ ${release} == "centos" ]]; then
-    if ! wget --no-check-certificate https://raw.githubusercontent.com/CokeMine/ServerStatus-Hotaru/master/caddy/caddy_centos -O /etc/init.d/caddy; then
-      echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy服务 管理脚本下载失败 !" && exit 1
+    if [[ -e "${filepath}/caddy/caddy_centos" ]]; then
+      cp "${filepath}/caddy/caddy_centos" /etc/init.d/caddy
+    else
+      echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy服务 管理脚本复制失败（未找到 ${filepath}/caddy/caddy_centos）!" && exit 1
     fi
     chmod +x /etc/init.d/caddy
     chkconfig --add caddy
     chkconfig caddy on
   else
-    if ! wget --no-check-certificate https://raw.githubusercontent.com/CokeMine/ServerStatus-Hotaru/master/caddy/caddy_debian -O /etc/init.d/caddy; then
-      echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy服务 管理脚本下载失败 !" && exit 1
+    if [[ -e "${filepath}/caddy/caddy_debian" ]]; then
+      cp "${filepath}/caddy/caddy_debian" /etc/init.d/caddy
+    else
+      echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy服务 管理脚本复制失败（未找到 ${filepath}/caddy/caddy_debian）!" && exit 1
     fi
     chmod +x /etc/init.d/caddy
     update-rc.d -f caddy defaults
