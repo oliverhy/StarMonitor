@@ -31,6 +31,9 @@ class CHttpServer
 		NETSOCKET m_Socket;
 		char m_aBuf[16384];
 		int m_BufLen;
+		char m_aResp[16384];
+		int m_RespLen;
+		int m_RespSent;
 	};
 
 	NETSOCKET m_ListenSocket;
