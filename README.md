@@ -18,7 +18,7 @@
 ### 一键安装
 
 ```bash
-bash starmonitor.sh s
+bash <(curl -s https://raw.githubusercontent.com/oliverhy/StarMonitor/master/starmonitor.sh) s
 ```
 
 安装过程中会提示：
@@ -30,7 +30,7 @@ bash starmonitor.sh s
 客户端：
 
 ```bash
-bash starmonitor.sh c
+bash <(curl -s https://raw.githubusercontent.com/oliverhy/StarMonitor/master/starmonitor.sh) c
 ```
 
 ### 手动安装服务端
