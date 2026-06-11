@@ -773,8 +773,9 @@ Install_caddy() {
       fi
       [[ ! -e "/usr/bin/caddy" ]] && echo -e "${Error} Caddy安装失败，请手动部署，Web网页文件位置：${web_file}" && exit 1
       systemctl enable caddy
-      echo "" >${caddy_file}
     }
+    # 清空 Caddyfile 重新写入
+    echo "" >${caddy_file}
     echo -e "请选择 Caddy 配置方式：
   ${Green_font_prefix} 1.${Font_color_suffix} HTTP（无需域名，仅明文传输）
   ${Green_font_prefix} 2.${Font_color_suffix} HTTPS（需要域名，自动申请 Let's Encrypt 证书）"
@@ -796,7 +797,7 @@ EOF
     else
       Set_server "server"
       Set_server_http_port
-      cat >>${caddy_file} <<-EOF
+      cat >${caddy_file} <<-EOF
 http://${server_s}:${server_http_port_s} {
   reverse_proxy localhost:${http_port_s}
   encode gzip
