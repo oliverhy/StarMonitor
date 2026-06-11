@@ -211,7 +211,8 @@ void CMain::JSONUpdateThread(void *pUser)
 
 	while(gs_Running)
 	{
-		char aFileBuf[2048*NET_MAX_CLIENTS];
+		int BufSize = 2048 * NET_MAX_CLIENTS;
+		char *aFileBuf = (char *)mem_alloc(BufSize, 1);
 		char *pBuf = aFileBuf;
 
 		str_format(pBuf, sizeof(aFileBuf), "{\n\"servers\": [\n");
@@ -270,6 +271,7 @@ void CMain::JSONUpdateThread(void *pUser)
 		io_flush(File);
 		io_close(File);
 		fs_rename(aJSONFileTmp, pConfig->m_aJSONFile);
+		mem_free(aFileBuf);
 		thread_sleep(1000);
 	}
 	fs_remove(pConfig->m_aJSONFile);
