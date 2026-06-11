@@ -592,8 +592,6 @@ void CHttpServer::Update()
 		m_aConns[slot].m_Active = true;
 		m_aConns[slot].m_Socket = NewSock;
 		m_aConns[slot].m_BufLen = 0;
-		m_aConns[slot].m_RespLen = 0;
-		m_aConns[slot].m_RespSent = 0;
 	}
 
 	// Read from connections
