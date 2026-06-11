@@ -5,8 +5,9 @@ export PATH
 #=================================================
 #  System Required: CentOS/Debian/Ubuntu/ArchLinux
 #  Description: StarMonitor client + server
-#  Version: Test v0.4.1
-#  Author: Toyo, Modified by APTX
+#  Version: v0.4.1
+#  Author: oliverhy
+#  Github: https://github.com/oliverhy/StarMonitor
 #=================================================
 
 sh_ver="0.4.1"
@@ -1128,8 +1129,7 @@ Update_Shell() {
 }
 menu_client() {
   echo && echo -e "  StarMonitor 一键安装管理脚本 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
-  -- Toyo | doub.io/shell-jc3 --
-  --    Modified by APTX    --
+  --    https://github.com/oliverhy/StarMonitor    --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
  ${Green_font_prefix} 1.${Font_color_suffix} 安装 客户端
@@ -1207,8 +1207,7 @@ menu_client() {
 }
 menu_server() {
   echo && echo -e "  StarMonitor 一键安装管理脚本 ${Red_font_prefix}[v${sh_ver}]${Font_color_suffix}
-  -- Toyo | doub.io/shell-jc3 --
-  --    Modified by APTX    --
+  --    https://github.com/oliverhy/StarMonitor    --
  ${Green_font_prefix} 0.${Font_color_suffix} 升级脚本
  ————————————
  ${Green_font_prefix} 1.${Font_color_suffix} 安装 服务端
