@@ -797,8 +797,10 @@ EOF
     else
       Set_server "server"
       Set_server_http_port
+      local caddy_listen=":${server_http_port_s}"
+      [[ -n "${server_s}" ]] && caddy_listen="http://${server_s}:${server_http_port_s}"
       cat >${caddy_file} <<-EOF
-http://${server_s}:${server_http_port_s} {
+${caddy_listen} {
   reverse_proxy localhost:${http_port_s}
   encode gzip
 }
