@@ -456,6 +456,7 @@ int main(int argc, const char *argv[])
 		signal(SIGTERM, ExitFunc);
 		signal(SIGQUIT, ExitFunc);
 		signal(SIGHUP, ReloadFunc);
+		signal(SIGPIPE, SIG_IGN);
 	#endif
 
 	char aUsage[128];
