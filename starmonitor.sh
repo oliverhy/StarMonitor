@@ -28,6 +28,15 @@ jq_file="${file}/jq"
 [[ ! -e ${jq_file} ]] && jq_file="/usr/bin/jq"
 region_json="${file}/region.json"
 
+github_prefix="https://raw.githubusercontent.com/oliverhy/StarMonitor/master"
+coding_prefix="https://cokemine.coding.net/p/hotarunet/d/ServerStatus-Hotaru/git/raw/master"
+link_prefix=${github_prefix}
+
+# 检测是否为 curl | bash 模式（本地没有项目文件）
+is_remote_mode() {
+  [[ ! -d "${filepath}/server" ]] || [[ ! -f "${filepath}/server/Makefile" ]]
+}
+
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
 Error="${Red_font_prefix}[错误]${Font_color_suffix}"
@@ -76,28 +85,50 @@ check_region() {
   return 1
 }
 Download_StarMonitor_server() {
-  cd "${filepath}/server" || exit 1
-  make
-  [[ ! -e "sergate" ]] && echo -e "${Error} StarMonitor 服务端编译失败 !" && exit 1
-  mkdir -p "${server_file}"
-  if [[ -e "${server_file}/sergate" ]]; then
-    mv "${server_file}/sergate" "${server_file}/sergate1"
-    mv "${filepath}/server/sergate" "${server_file}/sergate"
+  if is_remote_mode; then
+    cd "/tmp" || exit 1
+    wget -N --no-check-certificate "https://github.com/oliverhy/StarMonitor/archive/master.zip" -O "starmonitor.zip"
+    [[ ! -e "starmonitor.zip" ]] && echo -e "${Error} StarMonitor 服务端下载失败 !" && exit 1
+    unzip starmonitor.zip
+    rm -rf starmonitor.zip
+    cd "/tmp/StarMonitor-master/server" || exit 1
+    make
+    [[ ! -e "sergate" ]] && echo -e "${Error} StarMonitor 服务端编译失败 !" && exit 1
+    mkdir -p "${server_file}"
+    mv "sergate" "${server_file}/sergate"
+    mkdir -p "${web_file}"
+    if [[ -d "/tmp/StarMonitor-master/web" ]]; then
+      cp -r "/tmp/StarMonitor-master/web/"* "${web_file}/"
+    else
+      wget -N --no-check-certificate "https://github.com/cokemine/hotaru_theme/releases/latest/download/hotaru-theme.zip" -O "hotaru-theme.zip"
+      unzip hotaru-theme.zip && mv "./hotaru-theme" "${web_file}"
+      rm -rf hotaru-theme.zip
+    fi
+    rm -rf "/tmp/StarMonitor-master"
   else
-    mv "${filepath}/server/sergate" "${server_file}/sergate"
-  fi
-  mkdir -p "${web_file}"
-  if [[ -d "${filepath}/web" ]]; then
-    cp -r "${filepath}/web/"* "${web_file}/"
-  else
-    echo -e "${Tip} 未找到本地 web 主题目录 ${filepath}/web，请手动部署网页文件到 ${web_file}"
-  fi
-  if [[ ! -e "${server_file}/sergate" ]]; then
-    echo -e "${Error} StarMonitor 服务端移动重命名失败 !"
-    [[ -e "${server_file}/sergate1" ]] && mv "${server_file}/sergate1" "${server_file}/sergate"
-    exit 1
-  else
-    [[ -e "${server_file}/sergate1" ]] && rm -rf "${server_file}/sergate1"
+    cd "${filepath}/server" || exit 1
+    make
+    [[ ! -e "sergate" ]] && echo -e "${Error} StarMonitor 服务端编译失败 !" && exit 1
+    mkdir -p "${server_file}"
+    if [[ -e "${server_file}/sergate" ]]; then
+      mv "${server_file}/sergate" "${server_file}/sergate1"
+      mv "${filepath}/server/sergate" "${server_file}/sergate"
+    else
+      mv "${filepath}/server/sergate" "${server_file}/sergate"
+    fi
+    mkdir -p "${web_file}"
+    if [[ -d "${filepath}/web" ]]; then
+      cp -r "${filepath}/web/"* "${web_file}/"
+    else
+      echo -e "${Tip} 未找到本地 web 主题目录 ${filepath}/web，请手动部署网页文件到 ${web_file}"
+    fi
+    if [[ ! -e "${server_file}/sergate" ]]; then
+      echo -e "${Error} StarMonitor 服务端移动重命名失败 !"
+      [[ -e "${server_file}/sergate1" ]] && mv "${server_file}/sergate1" "${server_file}/sergate"
+      exit 1
+    else
+      [[ -e "${server_file}/sergate1" ]] && rm -rf "${server_file}/sergate1"
+    fi
   fi
 }
 Download_StarMonitor_client() {
@@ -105,7 +136,11 @@ Download_StarMonitor_client() {
   if [[ -e "${client_file}/status-client.py" ]]; then
     mv "${client_file}/status-client.py" "${client_file}/status-client1.py"
   fi
-  cp "${filepath}/clients/status-client.py" "${client_file}/status-client.py"
+  if is_remote_mode; then
+    wget -N --no-check-certificate "${link_prefix}/clients/status-client.py" -O "${client_file}/status-client.py"
+  else
+    cp "${filepath}/clients/status-client.py" "${client_file}/status-client.py"
+  fi
   if [[ ! -e "${client_file}/status-client.py" ]]; then
     echo -e "${Error} StarMonitor 客户端移动失败 !"
     [[ -e "${client_file}/status-client1.py" ]] && mv "${client_file}/status-client1.py" "${client_file}/status-client.py"
@@ -120,25 +155,28 @@ Download_StarMonitor_Service() {
   local service_note="服务端"
   [[ ${mode} == "client" ]] && service_note="客户端"
   if [[ ${release} == "archlinux" ]]; then
-    cp "${filepath}/service/starmonitor-${mode}.service" "/usr/lib/systemd/system/starmonitor-${mode}.service" ||
-      {
-        echo -e "${Error} StarMonitor ${service_note}服务管理脚本复制失败 !"
-        exit 1
-      }
+    if is_remote_mode; then
+      wget --no-check-certificate "${link_prefix}/service/starmonitor-${mode}.service" -O "/usr/lib/systemd/system/starmonitor-${mode}.service" ||
+        { echo -e "${Error} StarMonitor ${service_note}服务管理脚本下载失败 !"; exit 1; }
+    else
+      cp "${filepath}/service/starmonitor-${mode}.service" "/usr/lib/systemd/system/starmonitor-${mode}.service" ||
+        { echo -e "${Error} StarMonitor ${service_note}服务管理脚本复制失败 !"; exit 1; }
+    fi
     systemctl enable "starmonitor-${mode}.service"
   else
-    cp "${filepath}/service/starmonitor_${mode}_${release}" "/etc/init.d/starmonitor-${mode}" ||
-      {
-        echo -e "${Error} StarMonitor ${service_note}服务管理脚本复制失败 !"
-        exit 1
-      }
+    if is_remote_mode; then
+      wget --no-check-certificate "${link_prefix}/service/starmonitor_${mode}_${release}" -O "/etc/init.d/starmonitor-${mode}" ||
+        { echo -e "${Error} StarMonitor ${service_note}服务管理脚本下载失败 !"; exit 1; }
+    else
+      cp "${filepath}/service/starmonitor_${mode}_${release}" "/etc/init.d/starmonitor-${mode}" ||
+        { echo -e "${Error} StarMonitor ${service_note}服务管理脚本复制失败 !"; exit 1; }
+    fi
     chmod +x "/etc/init.d/starmonitor-${mode}"
     [[ ${release} == "centos" ]] &&
       {
         chkconfig --add "starmonitor-${mode}"
         chkconfig "starmonitor-${mode}" on
       }
-
     [[ ${release} == "debian" ]] && update-rc.d -f "starmonitor-${mode}" defaults
   fi
   echo -e "${Info} StarMonitor ${service_note}服务管理脚本下载完成 !"
@@ -732,13 +770,14 @@ Modify_config_client() {
 }
 Install_jq() {
   if [[ ! -e ${jq_file} ]]; then
-    if [[ -e "${filepath}/jq/jq-linux64" ]]; then
+    if ! is_remote_mode && [[ -e "${filepath}/jq/jq-linux64" ]]; then
       jq_file="${file}/jq"
       cp "${filepath}/jq/jq-linux64" ${jq_file}
-    elif [[ -e "${filepath}/jq/jq-linux32" ]]; then
+    elif ! is_remote_mode && [[ -e "${filepath}/jq/jq-linux32" ]]; then
       jq_file="${file}/jq"
       cp "${filepath}/jq/jq-linux32" ${jq_file}
     else
+      # fallback to package manager
       [[ ${release} == "archlinux" ]] && pacman -Sy jq --noconfirm
       [[ ${release} == "centos" ]] && yum -y install jq
       [[ ${release} == "debian" ]] && apt -y install jq
@@ -751,7 +790,7 @@ Install_jq() {
     echo -e "${Info} JQ解析器 已安装，继续..."
   fi
   if [[ ! -e ${region_json} ]]; then
-    if [[ -e "${filepath}/server/zh.json" ]]; then
+    if ! is_remote_mode && [[ -e "${filepath}/server/zh.json" ]]; then
       cp "${filepath}/server/zh.json" ${region_json}
     fi
   fi
@@ -813,6 +852,9 @@ EOF
 }
 Install_StarMonitor_server() {
   [[ -e "${server_file}/sergate" ]] && echo -e "${Error} 检测到 StarMonitor 服务端已安装 !" && exit 1
+  if is_remote_mode; then
+    Set_Mirror
+  fi
   Set_server_port
   Set_http_port
   Set_web_username
@@ -833,7 +875,18 @@ Install_StarMonitor_server() {
 }
 Install_StarMonitor_client() {
   [[ -e "${client_file}/status-client.py" ]] && echo -e "${Error} 检测到 StarMonitor 客户端已安装 !" && exit 1
-  check_sys
+Set_Mirror() {
+  echo -e "${Info} 请输入要选择的下载源，默认使用GitHub，中国大陆建议选择Coding.net，但是不建议将服务端部署在中国大陆主机上
+  ${Green_font_prefix} 1.${Font_color_suffix} GitHub
+  ${Green_font_prefix} 2.${Font_color_suffix} Coding.net (部分资源通过 FastGit 提供服务下载, Thanks to FastGit.org for the service)"
+  read -erp "请输入数字 [1-2], 默认为 1:" mirror_num
+  [[ -z "${mirror_num}" ]] && mirror_num=1
+  [[ ${mirror_num} == 2 ]] && link_prefix=${coding_prefix} || link_prefix=${github_prefix}
+}
+check_sys
+  if is_remote_mode; then
+    Set_Mirror
+  fi
   echo -e "${Info} 开始设置 用户配置..."
   Set_config_client
   echo -e "${Info} 开始安装/配置 依赖..."
@@ -850,6 +903,9 @@ Install_StarMonitor_client() {
 }
 Update_StarMonitor_server() {
   check_installed_server_status
+  if is_remote_mode; then
+    Set_Mirror
+  fi
   check_pid_server
   if [[ -n ${PID} ]]; then
     if [[ ${release} == "archlinux" ]]; then
@@ -865,6 +921,9 @@ Update_StarMonitor_server() {
 }
 Update_StarMonitor_client() {
   check_installed_client_status
+  if is_remote_mode; then
+    Set_Mirror
+  fi
   check_pid_client
   if [[ -n ${PID} ]]; then
     if [[ ${release} == "archlinux" ]]; then
