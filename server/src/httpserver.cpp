@@ -5,7 +5,7 @@
 #include "httpserver.h"
 
 static const char *LOGIN_PAGE =
-"<html><head><meta charset='utf-8'><title>ServerStatus 登录</title>"
+"<html><head><meta charset='utf-8'><title>StarMonitor 登录</title>"
 "<meta name='viewport' content='width=device-width,initial-scale=1'>"
 "<style>"
 "*{margin:0;padding:0;box-sizing:border-box}"
@@ -18,7 +18,7 @@ static const char *LOGIN_PAGE =
 "button:hover{background:#3a8eef}"
 ".err{color:#ff6b6b;text-align:center;margin-bottom:16px;display:none}"
 "</style></head><body>"
-"<div class='box'><h1>ServerStatus</h1>"
+"<div class='box'><h1>StarMonitor</h1>"
 "<div class='err' id='err'></div>"
 "<input type='text' id='user' placeholder='用户名' autocomplete='username'>"
 "<input type='password' id='pass' placeholder='密码' autocomplete='current-password'>"
@@ -35,7 +35,7 @@ static const char *LOGIN_PAGE =
 "</script></body></html>";
 
 static const char *DASHBOARD_PAGE =
-"<html><head><meta charset='utf-8'><title>ServerStatus</title>"
+"<html><head><meta charset='utf-8'><title>StarMonitor</title>"
 "<meta name='viewport' content='width=device-width,initial-scale=1'>"
 "<style>"
 "*{margin:0;padding:0;box-sizing:border-box}"
@@ -60,7 +60,7 @@ static const char *DASHBOARD_PAGE =
 ".bar.hdd>div{background:#f39c12}"
 ".updated{text-align:center;color:#556677;font-size:12px;margin-top:24px}"
 "</style></head><body>"
-"<div class='hd'><h1>ServerStatus</h1><a class='logout' href='/logout'>退出登录</a></div>"
+"<div class='hd'><h1>StarMonitor</h1><a class='logout' href='/logout'>退出登录</a></div>"
 "<div class='grid' id='grid'></div>"
 "<div class='updated' id='updated'></div>"
 "<script>"
@@ -238,7 +238,7 @@ void CHttpServer::URLDecode(char *pDst, const char *pSrc, int DstSize)
 void CHttpServer::Resp(CConn *pConn, int Code, const char *pStatus, const char *pCT, const char *pBody, int BodyLen, const char *pExtraHdr)
 {
 	char aBuf[16384];
-	int n = str_format(aBuf, sizeof(aBuf),
+	str_format(aBuf, sizeof(aBuf),
 		"HTTP/1.1 %d %s\r\n"
 		"Content-Length: %d\r\n"
 		"Content-Type: %s\r\n"
@@ -246,6 +246,7 @@ void CHttpServer::Resp(CConn *pConn, int Code, const char *pStatus, const char *
 		"%s"
 		"\r\n",
 		Code, pStatus, BodyLen, pCT, pExtraHdr ? pExtraHdr : "");
+	int n = str_length(aBuf);
 	mem_copy(aBuf + n, pBody, BodyLen);
 	n += BodyLen;
 	net_tcp_send(pConn->m_Socket, aBuf, n);
@@ -460,7 +461,7 @@ void CHttpServer::Handle(CConn *pConn)
 		if(str_comp(aPath, "/login") == 0)
 		{
 			// Parse POST body
-			char *pBody = str_find(pReq, "\r\n\r\n");
+			const char *pBody = str_find(pReq, "\r\n\r\n");
 			if(!pBody) { CloseConn(pConn); return; }
 			pBody += 4;
 
@@ -509,8 +510,9 @@ void CHttpServer::Handle(CConn *pConn)
 				if(s)
 				{
 					char aResp[512];
-					int n = str_format(aResp, sizeof(aResp),
+					str_format(aResp, sizeof(aResp),
 						"{\"token\":\"%s\",\"username\":\"%s\"}", s->m_aToken, s->m_aUsername);
+					int n = str_length(aResp);
 					char aHdr[256];
 					str_format(aHdr, sizeof(aHdr),
 						"Set-Cookie: token=%s; path=/; max-age=3600\r\n", s->m_aToken);
