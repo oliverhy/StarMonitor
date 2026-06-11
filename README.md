@@ -2,6 +2,8 @@
 
 云探针、多服务器探针、云监控 — 基于 ServerStatus-Hotaru，内嵌 Web 登录认证与仪表盘。
 
+本项目源于 [cokemine/ServerStatus-Hotaru](https://github.com/cokemine/ServerStatus-Hotaru) 修改而来，在原版基础上增加了内嵌 HTTP 仪表盘和 Web 用户登录认证功能。
+
 ## 特性
 
 - 服务端客户端脚本支持系统：Centos 7、Debian 8、Ubuntu 15.10 及以上、ArchLinux
