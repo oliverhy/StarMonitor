@@ -249,12 +249,22 @@ void CHttpServer::Resp(CConn *pConn, int Code, const char *pStatus, const char *
 	int n = str_length(aBuf);
 	mem_copy(aBuf + n, pBody, BodyLen);
 	n += BodyLen;
-	// Buffer the response; Update() will flush it
-	if(n <= (int)sizeof(pConn->m_aResp))
+	// Direct send with retry on partial writes
+	int sent = 0;
+	int attempts = 0;
+	while(sent < n && attempts < 100)
 	{
-		mem_copy(pConn->m_aResp, aBuf, n);
-		pConn->m_RespLen = n;
-		pConn->m_RespSent = 0;
+		int ret = net_tcp_send(pConn->m_Socket, aBuf + sent, n - sent);
+		if(ret > 0)
+		{
+			sent += ret;
+			attempts = 0;
+		}
+		else
+		{
+			attempts++;
+			thread_sleep(1);
+		}
 	}
 }
 
@@ -548,7 +558,7 @@ void CHttpServer::Handle(CConn *pConn)
 		Resp(pConn, 405, "Method Not Allowed", "text/plain", msg, str_length(msg), 0);
 	}
 
-	// Don't close here — let Update() close after the response is flushed
+	CloseConn(pConn);
 }
 
 void CHttpServer::Update()
@@ -591,24 +601,6 @@ void CHttpServer::Update()
 	{
 		if(!m_aConns[i].m_Active)
 			continue;
-
-		// Flush buffered response first
-		if(m_aConns[i].m_RespLen > 0)
-		{
-			int left = m_aConns[i].m_RespLen - m_aConns[i].m_RespSent;
-			if(left > 0)
-			{
-				int ret = net_tcp_send(m_aConns[i].m_Socket,
-					m_aConns[i].m_aResp + m_aConns[i].m_RespSent, left);
-				if(ret > 0)
-					m_aConns[i].m_RespSent += ret;
-				else if(ret < 0 && !net_would_block())
-					CloseConn(&m_aConns[i]);
-			}
-			if(m_aConns[i].m_RespSent >= m_aConns[i].m_RespLen)
-				CloseConn(&m_aConns[i]);
-			continue;
-		}
 
 		int bytes = net_tcp_recv(m_aConns[i].m_Socket,
 			m_aConns[i].m_aBuf + m_aConns[i].m_BufLen,
