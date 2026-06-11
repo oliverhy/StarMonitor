@@ -130,6 +130,8 @@ bool CHttpServer::Init(const char *pWebDir, int Port)
 		return false;
 	}
 	net_set_non_blocking(m_ListenSocket);
+	for(int i = 0; i < MAX_CONNS; i++)
+		m_aConns[i].m_Active = false;
 	m_Ready = true;
 	dbg_msg("httpserver", "HTTP server listening on port %d", Port);
 	return true;
