@@ -467,7 +467,8 @@ uninstall_server() {
   [[ ! -f "${SERVER_DIR}/sergate" ]] && echo -e "${Error} 服务端未安装" && exit 1
   read -erp "确认卸载服务端？[y/N]: " yn
   [[ ${yn} != [Yy] ]] && return
-  stop_server 2>/dev/null
+  pid_server
+  [[ -n ${PID} ]] && do_service "stop" "server"
   rm -rf "${SERVER_DIR}" "${WEB_DIR}"
   rm -f "/etc/init.d/starmonitor-server" "/usr/lib/systemd/system/starmonitor-server.service"
   echo -e "${Info} 服务端已卸载"
@@ -477,7 +478,8 @@ uninstall_client() {
   [[ ! -f "${CLIENT_DIR}/status-client.py" ]] && echo -e "${Error} 客户端未安装" && exit 1
   read -erp "确认卸载客户端？[y/N]: " yn
   [[ ${yn} != [Yy] ]] && return
-  stop_client 2>/dev/null
+  pid_client
+  [[ -n ${PID} ]] && do_service "stop" "client"
   rm -rf "${CLIENT_DIR}"
   rm -f "/etc/init.d/starmonitor-client" "/usr/lib/systemd/system/starmonitor-client.service"
   echo -e "${Info} 客户端已卸载"
