@@ -596,6 +596,26 @@ void CHttpServer::Update()
 			// Check if we have complete headers
 			if(str_find(m_aConns[i].m_aBuf, "\r\n\r\n"))
 			{
+				// For POST, wait for full body based on Content-Length
+				const char *pCL = str_find_nocase(m_aConns[i].m_aBuf, "Content-Length: ");
+				int bodyLen = 0;
+				if(pCL)
+				{
+					pCL += 16;
+					while(*pCL >= '0' && *pCL <= '9')
+					{
+						bodyLen = bodyLen * 10 + (*pCL - '0');
+						pCL++;
+					}
+				}
+				const char *pSep = str_find(m_aConns[i].m_aBuf, "\r\n\r\n");
+				int headerEnd = (int)(pSep - m_aConns[i].m_aBuf) + 4;
+				int totalNeeded = headerEnd + bodyLen;
+				if(m_aConns[i].m_BufLen < totalNeeded)
+				{
+					// Body not fully received yet, wait for more data
+					continue;
+				}
 				Handle(&m_aConns[i]);
 			}
 			else if(m_aConns[i].m_BufLen >= (int)sizeof(m_aConns[i].m_aBuf) - 1)
