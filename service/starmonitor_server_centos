@@ -22,7 +22,7 @@ Info_font_prefix="\033[32m" && Error_font_prefix="\033[31m" && Font_suffix="\033
 RETVAL=0
 
 check_running(){
-	PID=$(pgrep -f "${NAME_BIN}")
+	PID=$(pgrep -f "${NAME_BIN}" | tr '\n' ' ')
 	if [[ -n ${PID} ]]; then
 		return 0
 	else
@@ -57,12 +57,15 @@ do_start(){
 }
 do_stop(){
 	if check_running; then
-		kill -9 "${PID}"
+		kill -9 ${PID}
 		RETVAL=$?
-		if [[ $RETVAL -eq 0 ]]; then
-			echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 停止成功 !"
+		sleep 1
+		if check_running; then
+			echo -e "${Error_font_prefix}[错误]${Font_suffix}$NAME 停止失败 !"
+			RETVAL=1
 		else
-			echo -e "${Error_font_prefix}[错误]${Font_suffix} $NAME 停止失败 !"
+			echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 停止成功 !"
+			RETVAL=0
 		fi
 	else
 		echo -e "${Info_font_prefix}[信息]${Font_suffix} $NAME 未运行"
@@ -79,6 +82,7 @@ do_status(){
 }
 do_restart(){
 	do_stop
+	sleep 1
 	do_start
 }
 case "$1" in

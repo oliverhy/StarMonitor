@@ -255,8 +255,8 @@ EOF
 }
 
 # ========== 启动/停止/重启 ==========
-pid_server() { PID=$(pgrep -f "sergate"); }
-pid_client() { PID=$(pgrep -f "status-client.py"); }
+pid_server() { PID=$(pgrep -f "sergate" | tr '\n' ' '); }
+pid_client() { PID=$(pgrep -f "status-client.py" | tr '\n' ' '); }
 
 do_service() {
   local action=$1 mode=$2
