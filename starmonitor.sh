@@ -332,7 +332,9 @@ add_node() {
   local tmp=$(jq ".servers[.servers | length] |= . + {\"username\":\"${user}\",\"password\":\"${pass}\",\"name\":\"${name}\",\"type\":\"${type}\",\"host\":\"\",\"location\":\"${loc}\",\"disabled\":false,\"region\":\"${region}\"}" "${CONF}")
   echo "${tmp}" > "${CONF}"
   echo -e "${Info} 节点 ${user} 已添加"
-  restart_server 2>/dev/null
+  stop_server 2>/dev/null
+	sleep 1
+	start_server 2>/dev/null
 }
 
 del_node() {
@@ -343,7 +345,9 @@ del_node() {
   local tmp=$(jq "del(.servers[] | select(.username == \"${user}\"))" "${CONF}")
   echo "${tmp}" > "${CONF}"
   echo -e "${Info} 节点 ${user} 已删除"
-  restart_server 2>/dev/null
+  stop_server 2>/dev/null
+	sleep 1
+	start_server 2>/dev/null
 }
 
 # ========== Caddy 配置 ==========
