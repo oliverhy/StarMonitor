@@ -86,7 +86,7 @@ static const char *DASHBOARD_PAGE =
 "h+='<div class=\"row\"><span class=\"l\">流量 ↓</span><span class=\"r\">'+fmt(s.network_in)+'</span></div>';"
 "h+='<div class=\"row\"><span class=\"l\">流量 ↑</span><span class=\"r\">'+fmt(s.network_out)+'</span></div>'}else{h+='<div style=\"color:#556677\">等待连接...</div>'}"
 "c.innerHTML=h;g.appendChild(c)}"
-"document.getElementById('updated').textContent='更新于 '+d.updated}"
+"document.getElementById('updated').textContent='更新于 '+new Date(d.updated*1000).toLocaleString()}"
 "load();setInterval(load,5000)"
 "</script></body></html>";
 
