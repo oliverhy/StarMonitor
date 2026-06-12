@@ -84,10 +84,12 @@ static const char *DASHBOARD_PAGE =
 "h+='<div class=\"row\"><span class=\"l\">硬盘</span><span class=\"r\">'+fmt(s.hdd_used)+' / '+fmt(s.hdd_total)+'</span></div>';"
 "h+='<div class=\"bar hdd\"><div style=\"width:'+(s.hdd_total?((s.hdd_used/s.hdd_total)*100).toFixed(0):0)+'%\"></div></div>';"
 "h+='<div class=\"row\"><span class=\"l\">流量 ↓</span><span class=\"r\">'+fmt(s.network_in)+'</span></div>';"
-"h+='<div class=\"row\"><span class=\"l\">流量 ↑</span><span class=\"r\">'+fmt(s.network_out)+'</span></div>'}else{h+='<div style=\"color:#556677\">等待连接...</div>'}"
+"h+='<div class=\"row\"><span class=\"l\">流量 ↑</span><span class=\"r\">'+fmt(s.network_out)+'</span></div>';"
+"h+='<div class=\"row\"><span class=\"l\">速率 ↓</span><span class=\"r\">'+fmt(s.network_rx)+'/s</span></div>';"
+"h+='<div class=\"row\"><span class=\"l\">速率 ↑</span><span class=\"r\">'+fmt(s.network_tx)+'/s</span></div>'}else{h+='<div style=\"color:#556677\">等待连接...</div>'}"
 "c.innerHTML=h;g.appendChild(c)}"
 "document.getElementById('updated').textContent='更新于 '+new Date(d.updated*1000).toLocaleString()}"
-"load();setInterval(load,5000)"
+"load();setInterval(load,1000)"
 "</script></body></html>";
 
 CHttpServer::CHttpServer()
