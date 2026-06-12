@@ -215,7 +215,7 @@ void CMain::JSONUpdateThread(void *pUser)
 		char *aFileBuf = (char *)mem_alloc(BufSize, 1);
 		char *pBuf = aFileBuf;
 
-		str_format(pBuf, sizeof(aFileBuf), "{\n\"servers\": [\n");
+		str_format(pBuf, BufSize, "{\n\"servers\": [\n");
 		pBuf += strlen(pBuf);
 
 		for(int i = 0; i < NET_MAX_CLIENTS; i++)
@@ -238,22 +238,22 @@ void CMain::JSONUpdateThread(void *pUser)
 				else
 					str_format(aUptime, sizeof(aUptime), "%02d:%02d:%02d", (int)(pClients[i].m_Stats.m_Uptime/60.0/60.0), (int)((pClients[i].m_Stats.m_Uptime/60)%60), (int)((pClients[i].m_Stats.m_Uptime)%60));
 
-				str_format(pBuf, sizeof(aFileBuf) - (pBuf - aFileBuf), "{ \"name\": \"%s\", \"type\": \"%s\", \"host\": \"%s\", \"location\": \"%s\", \"online4\": %s, \"online6\": %s, \"uptime\": \"%s\", \"load\": %.2f, \"network_rx\": %" PRId64 ", \"network_tx\": %" PRId64 ", \"network_in\": %" PRId64 ", \"network_out\": %" PRId64 ", \"cpu\": %d, \"memory_total\": %" PRId64 ", \"memory_used\": %" PRId64 ", \"swap_total\": %" PRId64 ", \"swap_used\": %" PRId64 ", \"hdd_total\": %" PRId64 ", \"hdd_used\": %" PRId64 ", \"custom\": \"%s\" ,\"region\": \"%s\"},\n",
+				str_format(pBuf, BufSize - (pBuf - aFileBuf), "{ \"name\": \"%s\", \"type\": \"%s\", \"host\": \"%s\", \"location\": \"%s\", \"online4\": %s, \"online6\": %s, \"uptime\": \"%s\", \"load\": %.2f, \"network_rx\": %" PRId64 ", \"network_tx\": %" PRId64 ", \"network_in\": %" PRId64 ", \"network_out\": %" PRId64 ", \"cpu\": %d, \"memory_total\": %" PRId64 ", \"memory_used\": %" PRId64 ", \"swap_total\": %" PRId64 ", \"swap_used\": %" PRId64 ", \"hdd_total\": %" PRId64 ", \"hdd_used\": %" PRId64 ", \"custom\": \"%s\" ,\"region\": \"%s\"},\n",
 					pClients[i].m_aName, pClients[i].m_aType, pClients[i].m_aHost, pClients[i].m_aLocation, pClients[i].m_Stats.m_Online4 ? "true" : "false", pClients[i].m_Stats.m_Online6 ? "true" : "false",	aUptime, pClients[i].m_Stats.m_Load, pClients[i].m_Stats.m_NetworkRx, pClients[i].m_Stats.m_NetworkTx, pClients[i].m_Stats.m_NetworkIN, pClients[i].m_Stats.m_NetworkOUT, (int)pClients[i].m_Stats.m_CPU, pClients[i].m_Stats.m_MemTotal, pClients[i].m_Stats.m_MemUsed, pClients[i].m_Stats.m_SwapTotal, pClients[i].m_Stats.m_SwapUsed, pClients[i].m_Stats.m_HDDTotal, pClients[i].m_Stats.m_HDDUsed, pClients[i].m_Stats.m_aCustom,pClients[i].m_aRegion);
 				pBuf += strlen(pBuf);
 			}
 			else
 			{
-				str_format(pBuf, sizeof(aFileBuf) - (pBuf - aFileBuf), "{ \"name\": \"%s\", \"type\": \"%s\", \"host\": \"%s\", \"location\": \"%s\", \"online4\": false, \"online6\": false ,\"region\": \"%s\"},\n",
+				str_format(pBuf, BufSize - (pBuf - aFileBuf), "{ \"name\": \"%s\", \"type\": \"%s\", \"host\": \"%s\", \"location\": \"%s\", \"online4\": false, \"online6\": false ,\"region\": \"%s\"},\n",
 					pClients[i].m_aName, pClients[i].m_aType, pClients[i].m_aHost, pClients[i].m_aLocation,pClients[i].m_aRegion);
 				pBuf += strlen(pBuf);
 			}
 		}
 		if(!m_pJSONUpdateThreadData->m_ReloadRequired)
-			str_format(pBuf - 2, sizeof(aFileBuf) - (pBuf - aFileBuf), "\n],\n\"updated\": \"%lld\"\n}", (long long)time(/*ago*/0));
+			str_format(pBuf - 2, BufSize - (pBuf - aFileBuf), "\n],\n\"updated\": \"%lld\"\n}", (long long)time(/*ago*/0));
 		else
 		{
-			str_format(pBuf - 2, sizeof(aFileBuf) - (pBuf - aFileBuf), "\n],\n\"updated\": \"%lld\",\n\"reload\": true\n}", (long long)time(/*ago*/0));
+			str_format(pBuf - 2, BufSize - (pBuf - aFileBuf), "\n],\n\"updated\": \"%lld\",\n\"reload\": true\n}", (long long)time(/*ago*/0));
 			m_pJSONUpdateThreadData->m_ReloadRequired--;
 		}
 		pBuf += strlen(pBuf);
